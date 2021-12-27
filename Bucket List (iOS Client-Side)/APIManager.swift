@@ -32,7 +32,7 @@ class ApiManager{
     
     static func addTaskWithObjective(objective: String, completionHandler: @escaping(_ data: Data?, _ response: URLResponse?, _ error: Error?) -> Void) {
      // Create the url to request
-            if let urlToReq = URL(string:"https://fierce-anchorage-83610.herokuapp.com/tasks") {
+            if let urlToReq = URL(string:"https://saudibucketlistapi.herokuapp.com/tasks/") {
                 // Create an NSMutableURLRequest using the url. This Mutable Request will allow us to modify the headers.
                 var request = URLRequest(url: urlToReq)
                 // Set the method to POST
@@ -50,12 +50,13 @@ class ApiManager{
     
     static func deleteTasks(index:Int, completionHandler: @escaping(_ data: Data?, _ response: URLResponse?, _ error: Error?) -> Void) {
      // Create the url to request
-            if let urlToReq = URL(string:"https://fierce-anchorage-83610.herokuapp.com/tasks/\(index)/") {
+            if let urlToReq = URL(string:"https://saudibucketlistapi.herokuapp.com/tasks/\(index)/") {
                 // Create an NSMutableURLRequest using the url. This Mutable Request will allow us to modify the headers.
                 var request = URLRequest(url: urlToReq)
                 // Set the method to POST
                 request.httpMethod = "DELETE"
-           
+                let bodyData = "index\(index)"
+                request.httpBody = bodyData.data(using: String.Encoding.utf8)
                 // Create the session
                 let session = URLSession.shared
                 let task = session.dataTask(with: request as URLRequest, completionHandler: completionHandler)
@@ -66,21 +67,24 @@ class ApiManager{
     }
     static func updateTask(index:Int,objective: String, completionHandler: @escaping(_ data: Data?, _ response: URLResponse?, _ error: Error?) -> Void) {
              // Create the url to request
-                    if let urlToReq = URL(string: "https://fierce-anchorage-83610.herokuapp.com/tasks/\(index)/") {
+                    if let urlToReq = URL(string: "https://saudibucketlistapi.herokuapp.com/tasks/\(index)/") {
                         // Create an NSMutableURLRequest using the url. This Mutable Request will allow us to modify the headers.
                         var request = URLRequest(url: urlToReq)
                         // Set the method to PUT
                         request.httpMethod = "PUT"
-                        // Create some bodyData and attach it to the HTTPBody
-                        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                        request.setValue("application/json", forHTTPHeaderField: "Accept")
-                        // Create some bodyData and attach it to the HTTPBody
-                        let bodyData = "{\"objective\":\"\(objective)\"}"
-                        request.httpBody = bodyData.data(using: .utf8)
-                        // Create the session
-                        let session = URLSession.shared
-                        let task = session.dataTask(with: request as URLRequest, completionHandler: completionHandler)
-                        task.resume()
+                        do{
+                                      
+                            let bodyData = try JSONSerialization.data(withJSONObject: ["objective":objective])
+                                request.httpBody = bodyData
+                                       
+                                request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+                                       
+                            let session = URLSession.shared
+                            let task = session.dataTask(with: request, completionHandler: completionHandler)
+                            task.resume()
+                            }catch{
+                                print(error)
+                                   }
                     }
         }
 

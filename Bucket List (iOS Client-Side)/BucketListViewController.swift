@@ -9,41 +9,41 @@ import UIKit
 
 class BucketListViewController: UITableViewController , AddItemViewControllerDelegate {
     
-    let BucketListApi = "https://fierce-anchorage-83610.herokuapp.com/tasks"
-        
+    let BucketListApi = "https://saudibucketlistapi.herokuapp.com/tasks/"
+    
     
     var items = [Bucket]()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        getallList()
+    }
     
-    getallList()
-               }
-               
-               func getallList() {
-                   ApiManager.getApiResponse(urlPath: BucketListApi) { data, error in
-                      do {
-                           
-                               self.items = try JSONDecoder().decode([Bucket].self, from: data!)
-                               
-                               
-                               
-                               DispatchQueue.main.async {
-                                   // main thread
-                                   self.tableView.reloadData()
-                               }
-                          
-                      }catch{
-                          print(error)
-                       }
-                   }
-               }
-               
-               
-
+    func getallList() {
+        ApiManager.getApiResponse(urlPath: BucketListApi) { data, error in
+            do {
+                
+                self.items = try JSONDecoder().decode([Bucket].self, from: data!)
+                
+                
+                
+                DispatchQueue.main.async {
+                    // main thread
+                    self.tableView.reloadData()
+                }
+                
+            }catch{
+                print(error)
+            }
+        }
+    }
+    
+    
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return items.count
+        return items.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -54,13 +54,13 @@ class BucketListViewController: UITableViewController , AddItemViewControllerDel
         return cell
     }
     
-   
+    
     
     
     override func tableView(_ tableView: UITableView, accessoryButtonTappedForRowWith indexPath: IndexPath) {
         
         performSegue(withIdentifier: "Edititemseque", sender: indexPath)
-
+        
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
@@ -68,20 +68,8 @@ class BucketListViewController: UITableViewController , AddItemViewControllerDel
         
         ApiManager.deleteTasks(index: items[indexPath.row].id, completionHandler: {
             data , response, error in
-            do {
-                 
-                     self.items = try JSONDecoder().decode([Bucket].self, from: data!)
-                     
-                     
-                     
-                     DispatchQueue.main.async {
-                         // main thread
-                         self.tableView.reloadData()
-                     }
-                
-            }catch{
-                print(error)
-             }
+            
+            self.getallList()
         })
     }
     
@@ -89,49 +77,49 @@ class BucketListViewController: UITableViewController , AddItemViewControllerDel
     // prepare with seque  identifier
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-
-         if sender is UIBarButtonItem{
-          let destination = segue.destination as! UINavigationController
-
-          let addItem = destination.topViewController as! AddItemViewController
-
-          addItem.delegate = self
-         }
-         else if sender is IndexPath{
-             let destination = segue.destination as! UINavigationController
-
-             let addItem = destination.topViewController as! AddItemViewController
-
-             addItem.delegate = self
-             let indexPath = sender as! NSIndexPath
-             let item = items[indexPath.row].objective
-
-             addItem.item = item
-             addItem.indexPath = indexPath
-         
-    
-         }
+        
+        if sender is UIBarButtonItem{
+            let destination = segue.destination as! UINavigationController
+            
+            let addItem = destination.topViewController as! AddItemViewController
+            
+            addItem.delegate = self
+        }
+        else if sender is IndexPath{
+            let destination = segue.destination as! UINavigationController
+            
+            let addItem = destination.topViewController as! AddItemViewController
+            
+            addItem.delegate = self
+            let indexPath = sender as! NSIndexPath
+            let item = items[indexPath.row].objective
+            
+            addItem.item = item
+            addItem.indexPath = indexPath
+            
+            
+        }
         
     }
     
     
     
     
-
     
-
+    
+    
     func CancelButtonPressed(By controller: AddItemViewController) {
         dismiss(animated: true, completion: nil)
     }
     
     func itemSaved(by controller: AddItemViewController, with text: String, at indexPath: NSIndexPath?) {
-       
+        
         
         if let ip = indexPath{
-            updateTask(index: ip.row, text: text)
+            updateTask(index: items[ip.row].id, text: text)
         }
         else{
-          AddNewTask(text: text)
+            AddNewTask(text: text)
             
         }
         
@@ -147,20 +135,8 @@ class BucketListViewController: UITableViewController , AddItemViewControllerDel
     func AddNewTask(text:String){
         ApiManager.addTaskWithObjective(objective: text, completionHandler: {
             data , response, error in
-            do {
-                 
-                     self.items = try JSONDecoder().decode([Bucket].self, from: data!)
-                     
-                     
-                     
-                     DispatchQueue.main.async {
-                         // main thread
-                         self.getallList()
-                     }
-                
-            }catch{
-                print(error)
-             }
+            
+            self.getallList()
         })
     }
     
@@ -169,20 +145,10 @@ class BucketListViewController: UITableViewController , AddItemViewControllerDel
     func updateTask(index: Int, text: String){
         ApiManager.updateTask(index: index, objective: text, completionHandler: {
             data , response, error in
-            do {
-                 
-                     self.items = try JSONDecoder().decode([Bucket].self, from: data!)
-                     
-                     
-                     
-                     DispatchQueue.main.async {
-                         // main thread
-                         self.getallList()
-                     }
-                
-            }catch{
-                print(error)
-             }
+            
+            print(response ?? "no response")
+          
+            self.getallList()
         })
     }
     

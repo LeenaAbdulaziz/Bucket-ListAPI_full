@@ -12,7 +12,7 @@ import Foundation
 
 struct Bucket: Codable {
     let id: Int
-    var objective, createdAt: String
+    var objective, created_at: String
 
     
     
